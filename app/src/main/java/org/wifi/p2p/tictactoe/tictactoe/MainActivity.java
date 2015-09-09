@@ -33,8 +33,6 @@ public class MainActivity extends ActionBarActivity implements WifiP2pManager.Ch
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        Toast.makeText(getApplicationContext(), "YOYO", Toast.LENGTH_LONG).show();
-
         //  Indicates a change in the Wi-Fi P2P status.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
 
@@ -49,14 +47,6 @@ public class MainActivity extends ActionBarActivity implements WifiP2pManager.Ch
 
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this, getMainLooper(), null);
-
-        /*Button discoverPeersButton = (Button) findViewById(R.id.discoverPeersButton);
-        discoverPeersButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                discoverPeersPressed();
-            }
-        });*/
     }
 
     @Override
@@ -72,51 +62,10 @@ public class MainActivity extends ActionBarActivity implements WifiP2pManager.Ch
         unregisterReceiver(mBroadcastReceiver);
     }
 
-    protected void discoverPeersPressed(){
-        mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
-
-            @Override
-            public void onSuccess() {
-                // Code for when the discovery initiation is successful goes here.
-                // No services have actually been discovered yet, so this method
-                // can often be left blank.  Code for peer discovery goes in the
-                // onReceive method, detailed below.
-                Toast.makeText(MainActivity.this, "Discovery Initiated",
-                        Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onFailure(int reasonCode) {
-                // Code for when the discovery initiation fails goes here.
-                // Alert the user that something went wrong.
-                Toast.makeText(MainActivity.this, "Discovery Failed : " + reasonCode,
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-
-    /*@Override
-    public void connect(WifiP2pConfig config) {
-        mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
-
-            @Override
-            public void onSuccess() {
-                // WiFiDirectBroadcastReceiver will notify us. Ignore for now.
-            }
-
-            @Override
-            public void onFailure(int reason) {
-                Toast.makeText(MainActivity.this, "Connect failed. Retry.",
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
-    }*/
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        Toast.makeText(getApplicationContext(), "Creating menu", Toast.LENGTH_LONG).show();
+        //Toast.makeText(getApplicationContext(), "Creating menu", Toast.LENGTH_LONG).show();
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.action_items, menu);
         return true;
@@ -128,6 +77,12 @@ public class MainActivity extends ActionBarActivity implements WifiP2pManager.Ch
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
+
+            case R.id.start_game:
+                Intent openGameActivity = new Intent("org.wifi.p2p.tictactoe.GAME");
+                startActivity(openGameActivity);
+                return true;
+
             case R.id.atn_direct_enable:
                 if (mManager != null && mChannel != null) {
 

@@ -35,6 +35,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.wifi.p2p.tictactoe.tictactoe.DeviceListFragment.DeviceActionListener;
 
@@ -45,7 +46,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-
 
 /**
  * A fragment that manages a particular peer and allows interaction with device
@@ -80,13 +80,6 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
                 }
                 progressDialog = ProgressDialog.show(getActivity(), "Press back to cancel",
                         "Connecting to :" + device.deviceAddress, true, true
-//                        new DialogInterface.OnCancelListener() {
-//
-//                            @Override
-//                            public void onCancel(DialogInterface dialog) {
-//                                ((DeviceActionListener) getActivity()).cancelDisconnect();
-//                            }
-//                        }
                 );
                 ((DeviceActionListener) getActivity()).connect(config);
 
@@ -109,9 +102,8 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
                     public void onClick(View v) {
                         // Allow user to pick an image from Gallery or other
                         // registered apps
-                        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                        intent.setType("image/*");
-                        startActivityForResult(intent, CHOOSE_FILE_RESULT_CODE);
+                        Intent openGameActivity = new Intent("org.wifi.p2p.tictactoe.GAME");
+                        startActivity(openGameActivity);
                     }
                 });
 
@@ -126,6 +118,13 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         Uri uri = data.getData();
         TextView statusText = (TextView) mContentView.findViewById(R.id.status_text);
         statusText.setText("Sending: " + uri);
+        Intent serviceIntent = new Intent(getActivity(), FileTransferService.class);
+        serviceIntent.setAction(FileTransferService.ACTION_SEND_FILE);
+        serviceIntent.putExtra(FileTransferService.EXTRAS_FILE_PATH, uri.toString());
+        serviceIntent.putExtra(FileTransferService.EXTRAS_GROUP_OWNER_ADDRESS,
+                info.groupOwnerAddress.getHostAddress());
+        serviceIntent.putExtra(FileTransferService.EXTRAS_GROUP_OWNER_PORT, GameConnection.PORT);
+        getActivity().startService(serviceIntent);
     }
 
     @Override
@@ -133,6 +132,7 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
+
         this.info = info;
         this.getView().setVisibility(View.VISIBLE);
 
@@ -150,14 +150,28 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         // server. The file server is single threaded, single connection server
         // socket.
         if (info.groupFormed && info.isGroupOwner) {
-            new FileServerAsyncTask(getActivity(), mContentView.findViewById(R.id.status_text))
-                    .execute();
+            Toast.makeText(getActivity().getApplicationContext(), "GROUP LEADER", Toast.LENGTH_SHORT).show();
+
+            Intent openGameActivity = new Intent("org.wifi.p2p.tictactoe.GAME");
+            openGameActivity.putExtra(getResources().getString(R.string.is_owner), true);
+            startActivity(openGameActivity);
+
+            /*new FileServerAsyncTask(getActivity(), mContentView.findViewById(R.id.status_text))
+                    .execute();*/
         } else if (info.groupFormed) {
+            Toast.makeText(getActivity().getApplicationContext(), "GROUP MEMBER", Toast.LENGTH_SHORT).show();
+
+            Intent openGameActivity = new Intent("org.wifi.p2p.tictactoe.GAME");
+            openGameActivity.putExtra(getResources().getString(R.string.is_owner), false);
+            openGameActivity.putExtra(getResources().getString(R.string.owner_ip), info.groupOwnerAddress.getHostAddress());
+            startActivity(openGameActivity);
+
+
             // The other device acts as the client. In this case, we enable the
             // get file button.
-            mContentView.findViewById(R.id.btn_start_client).setVisibility(View.VISIBLE);
-            ((TextView) mContentView.findViewById(R.id.status_text)).setText(getResources()
-                    .getString(R.string.client_text));
+
+            //mContentView.findViewById(R.id.btn_start_client).setVisibility(View.VISIBLE);
+            //((TextView) mContentView.findViewById(R.id.status_text)).setText(getResources().getString(R.string.client_text));
         }
 
         // hide the connect button
@@ -216,9 +230,8 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
 
         @Override
         protected String doInBackground(Void... params) {
-            ;
-            /*try {
-                ServerSocket serverSocket = new ServerSocket(8988);
+            try {
+                ServerSocket serverSocket = new ServerSocket(GameConnection.PORT);
                 Socket client = serverSocket.accept();
                 final File f = new File(Environment.getExternalStorageDirectory() + "/"
                         + context.getPackageName() + "/wifip2pshared-" + System.currentTimeMillis()
@@ -230,13 +243,12 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
                 f.createNewFile();
 
                 InputStream inputstream = client.getInputStream();
-                copyFile(inputstream, new FileOutputStream(f));
+                //copyFile(inputstream, new FileOutputStream(f));
                 serverSocket.close();
                 return f.getAbsolutePath();
             } catch (IOException e) {
                 return null;
-            }*/
-            return null;
+            }
         }
 
         /*
@@ -264,26 +276,6 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
             statusText.setText("Opening a server socket");
         }
 
-    }
-
-    public static boolean copyFile(InputStream inputStream, OutputStream out) {
-        byte buf[] = new byte[1024];
-        int len;
-        long startTime= System.currentTimeMillis();
-        
-        try {
-            while ((len = inputStream.read(buf)) != -1) {
-                out.write(buf, 0, len);
-            }
-            out.close();
-            inputStream.close();
-            long endTime= System.currentTimeMillis()-startTime;
-            Log.v("", "Time taken to transfer all bytes is : " + endTime);
-            
-        } catch (IOException e) {
-            return false;
-        }
-        return true;
     }
 
 }

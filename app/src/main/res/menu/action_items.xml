@@ -10,4 +10,8 @@
         android:id="@+id/atn_direct_discover"
         android:title="@string/discover_peers_button"
          />
+    <item
+        android:id="@+id/start_game"
+        android:title="@string/start_game"
+        />
 </menu>

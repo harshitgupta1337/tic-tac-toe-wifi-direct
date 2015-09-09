@@ -24,7 +24,6 @@ import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -36,36 +35,38 @@ import java.net.UnknownHostException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-public class ChatConnection {
+public class GameConnection {
+
+    public static int PORT = 7872;
 
     private Handler mUpdateHandler;
-    private ChatServer mChatServer;
-    private ChatClient mChatClient;
-    private GameActivity activity;
+    private GameServer mGameServer;
+    private GameClient mGameClient;
+    private GameActivity gameActivity;
 
-    private static final String TAG = "ChatConnection";
+    private static final String TAG = "GameConnection";
 
     private Socket mSocket;
     private int mPort = -1;
 
-    public ChatConnection(Handler handler, GameActivity activity) {
+    public GameConnection(Handler handler, GameActivity gameActivity) {
         mUpdateHandler = handler;
-        mChatServer = new ChatServer(handler);
-        this.activity = activity;
+        mGameServer = new GameServer(handler);
+        this.gameActivity = gameActivity;
     }
 
     public void tearDown() {
-        mChatServer.tearDown();
-        mChatClient.tearDown();
+        mGameServer.tearDown();
+        mGameClient.tearDown();
     }
 
     public void connectToServer(InetAddress address, int port) {
-        mChatClient = new ChatClient(address, port);
+        mGameClient = new GameClient(address, port);
     }
 
     public void sendMessage(String msg) {
-        if (mChatClient != null) {
-            mChatClient.sendMessage(msg);
+        if (mGameClient != null) {
+            mGameClient.sendMessage(msg);
         }
     }
 
@@ -106,7 +107,6 @@ public class ChatConnection {
                 try {
                     mSocket.close();
                 } catch (IOException e) {
-                    // TODO(alexlucas): Auto-generated catch block
                     e.printStackTrace();
                 }
             }
@@ -118,13 +118,20 @@ public class ChatConnection {
         return mSocket;
     }
 
-    private class ChatServer {
+    public void sendHandshake(String ownerAddress) throws UnknownHostException {
+        mGameClient = new GameClient(InetAddress.getByName(ownerAddress),GameConnection.PORT );
+        mGameClient.sendMessage("HANDSHAKE KAROGE ?");
+    }
+
+    private class GameServer {
         ServerSocket mServerSocket = null;
         Thread mThread = null;
+        Handler handler;
 
-        public ChatServer(Handler handler) {
+        public GameServer(Handler handler) {
             mThread = new Thread(new ServerThread());
             mThread.start();
+            this.handler = handler;
         }
 
         public void tearDown() {
@@ -144,29 +151,21 @@ public class ChatConnection {
                 try {
                     // Since discovery will happen via Nsd, we don't need to care which port is
                     // used.  Just grab an available one  and advertise it via Nsd.
-                    mServerSocket = new ServerSocket(GameConnection.PORT);
+                    mServerSocket = new ServerSocket(PORT);
                     setLocalPort(mServerSocket.getLocalPort());
 
                     while (!Thread.currentThread().isInterrupted()) {
                         Log.d(TAG, "ServerSocket Created, awaiting connection");
-                        setSocket(mServerSocket.accept());
+                        //setSocket(mServerSocket.accept());
+
+                        Toast.makeText(gameActivity.getApplicationContext(), "MESSAGE ARRIVED",
+                                Toast.LENGTH_SHORT).show();
+
                         Log.d(TAG, "Connected.");
-                        if (mChatClient == null) {
-                            /*Toast.makeText(activity.getApplicationContext(), "mChatClient is NULL",
-                                    Toast.LENGTH_SHORT).show();
-                            */
-                            Log.d(TAG, "----------- mChatClient is NULL ----------------");
+                        if (mGameClient == null) {
                             int port = mSocket.getPort();
                             InetAddress address = mSocket.getInetAddress();
-                            Log.d("MAAH", "Address of socket "+address);
-                            Log.d("MAAH", "Port of socket "+port);
-
-                            connectToServer(address, port);
-
-                            sendMessage("YOYO HONEY");
-
-                        }else{
-                            Log.d(TAG, "----------- mChatClient is NOT NULL ----------------");
+                            //connectToServer(address, port);
                         }
                     }
                 } catch (IOException e) {
@@ -177,19 +176,19 @@ public class ChatConnection {
         }
     }
 
-    private class ChatClient {
+    private class GameClient {
 
         private InetAddress mAddress;
         private int PORT;
 
-        private final String CLIENT_TAG = "ChatClient";
+        private final String CLIENT_TAG = "GameClient";
 
         private Thread mSendThread;
         private Thread mRecThread;
 
-        public ChatClient(InetAddress address, int port) {
+        public GameClient(InetAddress address, int port) {
 
-            Log.d(CLIENT_TAG, "Creating chatClient");
+            Log.d(CLIENT_TAG, "Creating GameClient");
             this.mAddress = address;
             this.PORT = port;
 
@@ -211,7 +210,8 @@ public class ChatConnection {
                 try {
                     if (getSocket() == null) {
                         setSocket(new Socket(mAddress, PORT));
-                        Log.d(CLIENT_TAG, "Client-side socket initialized : "+mAddress.toString());
+                        Log.d(CLIENT_TAG, "Client-side socket initialized.");
+
                     } else {
                         Log.d(CLIENT_TAG, "Socket already initialized. skipping!");
                     }
@@ -246,15 +246,15 @@ public class ChatConnection {
                     input = new BufferedReader(new InputStreamReader(
                             mSocket.getInputStream()));
                     while (!Thread.currentThread().isInterrupted()) {
-
                         String messageStr = null;
                         messageStr = input.readLine();
                         if (messageStr != null) {
-                            Log.d("MAAH", "Read from the stream: " + messageStr);
-                            activity.handleMessage(messageStr);
-                            //updateMessages(messageStr, false);
+                            Toast.makeText(gameActivity.getApplicationContext(), "MESSAGE ARRIVED++++++++++",
+                                    Toast.LENGTH_SHORT).show();
+                            Log.d(CLIENT_TAG, "Read from the stream: " + messageStr);
+                            updateMessages(messageStr, false);
                         } else {
-                            Log.d("MAAH", "The nulls! The nulls!");
+                            Log.d(CLIENT_TAG, "The nulls! The nulls!");
                             break;
                         }
                     }
@@ -275,20 +275,25 @@ public class ChatConnection {
         }
 
         public void sendMessage(String msg) {
+            Toast.makeText(gameActivity.getApplicationContext(), "Trying to send message",
+                    Toast.LENGTH_SHORT).show();
             try {
                 Socket socket = getSocket();
                 if (socket == null) {
+                    setSocket(new Socket());
                     Log.d(CLIENT_TAG, "Socket is null, wtf?");
                 } else if (socket.getOutputStream() == null) {
+                    Toast.makeText(gameActivity.getApplicationContext(), "Socket output stream is null",
+                            Toast.LENGTH_SHORT).show();
                     Log.d(CLIENT_TAG, "Socket output stream is null, wtf?");
                 }
-                Log.d("MAAH", "Sending message : "+msg);
+
                 PrintWriter out = new PrintWriter(
                         new BufferedWriter(
                                 new OutputStreamWriter(getSocket().getOutputStream())), true);
                 out.println(msg);
                 out.flush();
-                //updateMessages(msg, true);
+                updateMessages(msg, true);
             } catch (UnknownHostException e) {
                 Log.d(CLIENT_TAG, "Unknown Host", e);
             } catch (IOException e) {
