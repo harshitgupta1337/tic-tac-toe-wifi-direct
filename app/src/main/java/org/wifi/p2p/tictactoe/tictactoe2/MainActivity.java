@@ -10,6 +10,7 @@ import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -47,6 +48,7 @@ public class MainActivity extends ActionBarActivity implements WifiP2pManager.Ch
 
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this, getMainLooper(), null);
+
     }
 
     @Override
@@ -96,6 +98,32 @@ public class MainActivity extends ActionBarActivity implements WifiP2pManager.Ch
                 }
                 return true;
 
+            case R.id.atn_direct_create_group:
+                if (!isWifiP2pEnabled) {
+                    Toast.makeText(MainActivity.this, R.string.p2p_off_warning,
+                            Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+                /*final DeviceListFragment fragment = (DeviceListFragment) getFragmentManager()
+                        .findFragmentById(R.id.frag_list);
+                fragment.onInitiateDiscovery();*/
+
+                mManager.createGroup(mChannel, new WifiP2pManager.ActionListener() {
+
+                    @Override
+                    public void onSuccess() {
+                        Toast.makeText(MainActivity.this, "Group created",
+                                Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onFailure(int reasonCode) {
+                        Toast.makeText(MainActivity.this, "Group creation Failed : " + reasonCode,
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+                return true;
+
             case R.id.atn_direct_discover:
                 if (!isWifiP2pEnabled) {
                     Toast.makeText(MainActivity.this, R.string.p2p_off_warning,
@@ -105,6 +133,7 @@ public class MainActivity extends ActionBarActivity implements WifiP2pManager.Ch
                 final DeviceListFragment fragment = (DeviceListFragment) getFragmentManager()
                         .findFragmentById(R.id.frag_list);
                 fragment.onInitiateDiscovery();
+
                 mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
 
                     @Override

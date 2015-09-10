@@ -132,7 +132,16 @@ public class GameActivity extends Activity {
                     gameOn = false;
                 }
 
+                if(!youLose && !youWin && !gameOn){
+                    Toast.makeText(getApplicationContext(), "GAME DRAWN", Toast.LENGTH_LONG).show();
+                    gameOn = false;
+                }
+
                 myTurn = true;
+
+                if(gameOn)
+                    Toast.makeText(GameActivity.this, "Your turn", Toast.LENGTH_SHORT).show();
+
             }
         });
     }
@@ -154,6 +163,8 @@ public class GameActivity extends Activity {
                 modifyGame(msg);
             }else if(messageType.equals("restart")){
                 restartGame();
+            } else if(messageType.equals("leave_group")){
+
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -255,6 +266,11 @@ public class GameActivity extends Activity {
                         Toast.makeText(getApplicationContext(), "YOU LOSE", Toast.LENGTH_LONG).show();
                         gameOn = false;
                     }
+
+                    if(!youLose && !youWin && !gameOn){
+                        Toast.makeText(getApplicationContext(), "GAME DRAWN", Toast.LENGTH_LONG).show();
+                        gameOn = false;
+                    }
                 }
 
                 sendGameState();
@@ -305,8 +321,27 @@ public class GameActivity extends Activity {
         setOnClickListenerForButton(button6, 6);
         setOnClickListenerForButton(button7, 7);
         setOnClickListenerForButton(button8, 8);
-
+        /*Button leaveGameButton = (Button) findViewById(R.id.leaveGameButton);
+        leaveGameButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                leaveGroup();
+            }
+        })*/;
     }
+
+    private void leaveGroup(){
+        JSONObject msg = new JSONObject();
+        try {
+            msg.put("TYPE", "leave_game");
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Log.d("GameActivity", "JSON");
+        }
+        gameConnection.sendMessage(msg.toString());
+        this.onDestroy();
+    }
+
     @Override
     protected void onDestroy() {
         gameConnection.tearDown();

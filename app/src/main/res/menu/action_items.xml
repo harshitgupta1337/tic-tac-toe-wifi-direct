@@ -5,6 +5,10 @@
         android:id="@+id/atn_direct_enable"
         android:title="@string/enable_p2p_button"
         />
+    <item
+        android:id="@+id/atn_direct_create_group"
+        android:title="@string/create_group_button"
+        />
 
     <item
         android:id="@+id/atn_direct_discover"

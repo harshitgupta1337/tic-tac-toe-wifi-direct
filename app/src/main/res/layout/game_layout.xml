@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/image" >
+    android:background="@drawable/light" >
     <TableLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -93,5 +93,10 @@
         android:layout_height="wrap_content"
         android:text="Restart Game"
         android:id="@+id/restartGameButton" />
+    <!--Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Leave Game"
+        android:id="@+id/leaveGameButton" /-->
 
 </LinearLayout>

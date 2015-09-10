@@ -19,5 +19,5 @@
     <string name="label_peers">PEERS</string>
     <string name="is_owner">OWNER</string>
     <string name="owner_ip">OWNER_IP</string>
-
+    <string name="create_group_button">Create Group</string>
 </resources>
