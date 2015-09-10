@@ -128,16 +128,16 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         view = (TextView) mContentView.findViewById(R.id.device_info);
         view.setText("Group Owner IP - " + info.groupOwnerAddress.getHostAddress());
 
-        // After the group negotiation, we assign the group owner as the file
-        // server. The file server is single threaded, single connection server
-        // socket.
         if (info.groupFormed && info.isGroupOwner) {
             Toast.makeText(getActivity().getApplicationContext(), "GROUP LEADER", Toast.LENGTH_SHORT).show();
 
-            Intent openGameActivity = new Intent("org.wifi.p2p.tictactoe.GAME");
-            openGameActivity.putExtra(getResources().getString(R.string.is_owner), true);
-            startActivity(openGameActivity);
+            if(!Singleton.getInstance().isLocked()) {
+                Singleton.getInstance().setLocked(true);
 
+                Intent openGameActivity = new Intent("org.wifi.p2p.tictactoe.GAME");
+                openGameActivity.putExtra(getResources().getString(R.string.is_owner), true);
+                startActivity(openGameActivity);
+            }
             /*new FileServerAsyncTask(getActivity(), mContentView.findViewById(R.id.status_text))
                     .execute();*/
         } else if (info.groupFormed) {

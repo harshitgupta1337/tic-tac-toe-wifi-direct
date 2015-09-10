@@ -43,6 +43,7 @@ public class GameConnection {
     private GameServer mGameServer;
     private GameClient mGameClient;
     private GameActivity activity;
+    private boolean locked = false;
 
     private static final String TAG = "GameConnection";
 
@@ -150,24 +151,28 @@ public class GameConnection {
 
                     while (!Thread.currentThread().isInterrupted()) {
                         Log.d(TAG, "ServerSocket Created, awaiting connection");
-                        setSocket(mServerSocket.accept());
-                        Log.d(TAG, "Connected.");
-                        if (mGameClient == null) {
-                            /*Toast.makeText(activity.getApplicationContext(), "mGameClient is NULL",
-                                    Toast.LENGTH_SHORT).show();
-                            */
-                            Log.d(TAG, "----------- mGameClient is NULL ----------------");
-                            int port = mSocket.getPort();
-                            InetAddress address = mSocket.getInetAddress();
-                            Log.d("MAAH", "Address of socket "+address);
-                            Log.d("MAAH", "Port of socket "+port);
+                        Socket socket = mServerSocket.accept();
+                        if(!locked) {
+                            locked = true;
+                            setSocket(socket);
+                            Log.d(TAG, "Connected.");
+                            if (mGameClient == null) {
+                                /*Toast.makeText(activity.getApplicationContext(), "mGameClient is NULL",
+                                        Toast.LENGTH_SHORT).show();
+                                */
+                                Log.d(TAG, "----------- mGameClient is NULL ----------------");
+                                int port = mSocket.getPort();
+                                InetAddress address = mSocket.getInetAddress();
+                                Log.d("MAAH", "Address of socket " + address);
+                                Log.d("MAAH", "Port of socket " + port);
 
-                            connectToServer(address, port);
+                                connectToServer(address, port);
 
-                            sendMessage("YOYO HONEY");
+                                sendMessage("YOYO HONEY");
 
-                        }else{
-                            Log.d(TAG, "----------- mGameClient is NOT NULL ----------------");
+                            } else {
+                                Log.d(TAG, "----------- mGameClient is NOT NULL ----------------");
+                            }
                         }
                     }
                 } catch (IOException e) {
