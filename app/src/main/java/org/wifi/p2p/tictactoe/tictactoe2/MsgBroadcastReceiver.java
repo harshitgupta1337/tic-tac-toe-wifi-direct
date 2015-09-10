@@ -16,13 +16,13 @@ import java.util.List;
 /**
  * Created by hp on 08-09-2015.
  */
-public class ChatBroadcastReceiver extends BroadcastReceiver{
+public class MsgBroadcastReceiver extends BroadcastReceiver{
 
     MainActivity activity;
     WifiP2pManager mManager;
     WifiP2pManager.Channel mChannel;
 
-    public ChatBroadcastReceiver(WifiP2pManager mManager, WifiP2pManager.Channel mChannel, final Activity activity){
+    public MsgBroadcastReceiver(WifiP2pManager mManager, WifiP2pManager.Channel mChannel, final Activity activity){
         super();
         this.activity= (MainActivity)activity;
         this.mManager = mManager;

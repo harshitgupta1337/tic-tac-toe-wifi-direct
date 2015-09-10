@@ -23,7 +23,7 @@ public class GameActivity extends Activity {
     private static int EMPTY = 0;
     private static int OWNER = 1;
     private static int MEMBER = 2;
-    private ChatConnection gameConnection;
+    private GameConnection gameConnection;
     private Handler mUpdateHandler;
     boolean gameOn = true;
     int winStates[][] = {{0,1,2}, {3,4,5}, {6,7,8}, {0,3,6}, {1,4,7}, {2,5,8}, {0,4,8}, {2,4,6}};
@@ -48,7 +48,7 @@ public class GameActivity extends Activity {
 
             }
         };
-        gameConnection = new ChatConnection(mUpdateHandler, this);
+        gameConnection = new GameConnection(mUpdateHandler, this);
 
 
         createOnClickListeners();
@@ -62,7 +62,7 @@ public class GameActivity extends Activity {
             String ownerAddress = intent.getStringExtra(getResources().getString(R.string.owner_ip));
             try {
                 Toast.makeText(GameActivity.this, InetAddress.getByName(ownerAddress).toString(), Toast.LENGTH_SHORT).show();
-                gameConnection.connectToServer(InetAddress.getByName(ownerAddress), ChatConnection.PORT);
+                gameConnection.connectToServer(InetAddress.getByName(ownerAddress), GameConnection.PORT);
             } catch (Exception e) {
                 e.printStackTrace();
             }

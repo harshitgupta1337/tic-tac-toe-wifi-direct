@@ -36,37 +36,37 @@ import java.net.UnknownHostException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-public class ChatConnection {
+public class GameConnection {
 
     public static final int PORT = 7872;
     private Handler mUpdateHandler;
-    private ChatServer mChatServer;
-    private ChatClient mChatClient;
+    private GameServer mGameServer;
+    private GameClient mGameClient;
     private GameActivity activity;
 
-    private static final String TAG = "ChatConnection";
+    private static final String TAG = "GameConnection";
 
     private Socket mSocket;
     private int mPort = -1;
 
-    public ChatConnection(Handler handler, GameActivity activity) {
+    public GameConnection(Handler handler, GameActivity activity) {
         mUpdateHandler = handler;
-        mChatServer = new ChatServer(handler);
+        mGameServer = new GameServer(handler);
         this.activity = activity;
     }
 
     public void tearDown() {
-        mChatServer.tearDown();
-        mChatClient.tearDown();
+        mGameServer.tearDown();
+        mGameClient.tearDown();
     }
 
     public void connectToServer(InetAddress address, int port) {
-        mChatClient = new ChatClient(address, port);
+        mGameClient = new GameClient(address, port);
     }
 
     public void sendMessage(String msg) {
-        if (mChatClient != null) {
-            mChatClient.sendMessage(msg);
+        if (mGameClient != null) {
+            mGameClient.sendMessage(msg);
         }
     }
 
@@ -119,11 +119,11 @@ public class ChatConnection {
         return mSocket;
     }
 
-    private class ChatServer {
+    private class GameServer {
         ServerSocket mServerSocket = null;
         Thread mThread = null;
 
-        public ChatServer(Handler handler) {
+        public GameServer(Handler handler) {
             mThread = new Thread(new ServerThread());
             mThread.start();
         }
@@ -152,11 +152,11 @@ public class ChatConnection {
                         Log.d(TAG, "ServerSocket Created, awaiting connection");
                         setSocket(mServerSocket.accept());
                         Log.d(TAG, "Connected.");
-                        if (mChatClient == null) {
-                            /*Toast.makeText(activity.getApplicationContext(), "mChatClient is NULL",
+                        if (mGameClient == null) {
+                            /*Toast.makeText(activity.getApplicationContext(), "mGameClient is NULL",
                                     Toast.LENGTH_SHORT).show();
                             */
-                            Log.d(TAG, "----------- mChatClient is NULL ----------------");
+                            Log.d(TAG, "----------- mGameClient is NULL ----------------");
                             int port = mSocket.getPort();
                             InetAddress address = mSocket.getInetAddress();
                             Log.d("MAAH", "Address of socket "+address);
@@ -167,7 +167,7 @@ public class ChatConnection {
                             sendMessage("YOYO HONEY");
 
                         }else{
-                            Log.d(TAG, "----------- mChatClient is NOT NULL ----------------");
+                            Log.d(TAG, "----------- mGameClient is NOT NULL ----------------");
                         }
                     }
                 } catch (IOException e) {
@@ -178,19 +178,19 @@ public class ChatConnection {
         }
     }
 
-    private class ChatClient {
+    private class GameClient {
 
         private InetAddress mAddress;
         private int PORT;
 
-        private final String CLIENT_TAG = "ChatClient";
+        private final String CLIENT_TAG = "GameClient";
 
         private Thread mSendThread;
         private Thread mRecThread;
 
-        public ChatClient(InetAddress address, int port) {
+        public GameClient(InetAddress address, int port) {
 
-            Log.d(CLIENT_TAG, "Creating chatClient");
+            Log.d(CLIENT_TAG, "Creating GameClient");
             this.mAddress = address;
             this.PORT = port;
 

@@ -54,7 +54,7 @@ public class MainActivity extends ActionBarActivity implements WifiP2pManager.Ch
     @Override
     public void onResume() {
         super.onResume();
-        mBroadcastReceiver = new ChatBroadcastReceiver(mManager, mChannel, MainActivity.this);
+        mBroadcastReceiver = new MsgBroadcastReceiver(mManager, mChannel, MainActivity.this);
         registerReceiver(mBroadcastReceiver, intentFilter);
     }
 

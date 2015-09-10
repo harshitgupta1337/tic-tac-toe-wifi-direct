@@ -213,7 +213,7 @@ public static class FileServerAsyncTask extends AsyncTask<Void, Void, String> {
     @Override
     protected String doInBackground(Void... params) {
         try {
-            ServerSocket serverSocket = new ServerSocket(ChatConnection.PORT);
+            ServerSocket serverSocket = new ServerSocket(GameConnection.PORT);
             Socket client = serverSocket.accept();
             final File f = new File(Environment.getExternalStorageDirectory() + "/"
                     + context.getPackageName() + "/wifip2pshared-" + System.currentTimeMillis()
